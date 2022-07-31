@@ -25,9 +25,9 @@ func main() {
 		panic(confErr.Error())
 	}
 
-	var dataPath = viper.GetString("data.path")
-	var connectionsPath = viper.GetString("data.connections")
-	var outPath = viper.GetString("data.outPath")
+	var dataPath = viper.GetString("dataPath")
+	var connectionsPath = filepath.Join(dataPath, "connections")
+	var outPath = viper.GetString("outPath")
 
 	// Create tmp directory
 	errCreateOutput := os.MkdirAll(outPath, os.ModePerm)
@@ -35,7 +35,7 @@ func main() {
 		log.Println("Create output directory: ", errCreateOutput.Error())
 	}
 
-	var settingFilePath = filepath.Join(dataPath, "data/config", "setting.yml")
+	var settingFilePath = viper.GetString("settingFile")
 
 	confData, errReadYaml := ioutil.ReadFile(settingFilePath)
 
@@ -51,8 +51,8 @@ func main() {
 	}
 
 	//Template generate
-	templateDir := filepath.Join(dataPath, "data/template")
-	tmpDir := filepath.Join(dataPath, "data/tmp")
+	templateDir := filepath.Join(dataPath, "template")
+	tmpDir := filepath.Join(dataPath, "tmp")
 	//file main.yml
 	mainFlowFile := filepath.Join(templateDir, "main.yml")
 
@@ -164,7 +164,7 @@ func main() {
 		cronAll := strings.Split(conn.Cronjob.CronjobAll.RunTime, ":")
 		allCronTab := fmt.Sprintf("%s %s * * *", cronAll[1], cronAll[0])
 
-		manualPath := filepath.Join(dataPath, "data/connections", connectionId, "table_manual")
+		manualPath := filepath.Join(dataPath, connectionsPath, connectionId, "table_manual")
 
 		flowData := models.FlowTemplateStruct{
 			CONNECTION_UUID:  connectionId,

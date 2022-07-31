@@ -25,6 +25,10 @@ func main() {
 		panic(confErr.Error())
 	}
 
+	viper.SetDefault("dataPth", "/opt/minifi/data/template")
+	viper.SetDefault("outPath", "/opt/minifi/conf")
+	viper.SetDefault("settingFile", "/opt/minifi/data/config/setting.yml")
+
 	var dataPath = viper.GetString("dataPath")
 	var connectionsPath = filepath.Join(dataPath, "connections")
 	var outPath = viper.GetString("outPath")

@@ -1,5 +1,5 @@
 dataPath: /opt/minifi/data
 settingFile: /opt/minifi/data/config/setting.yml
 templatePath: /opt/minifi/data/template
-outPath: /opt/minifi/config
+outPath: /opt/minifi/conf
 cmd: /opt/minifi/bin/minifi.sh

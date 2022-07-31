@@ -1,0 +1,22 @@
+id: {{.CONNECTION_UUID}}
+name: '{{.CONNECTION_NAME}}Connection'
+type: org.apache.nifi.dbcp.DBCPConnectionPool
+Properties:
+  Database Connection URL: jdbc:postgresql://{{.HOST}}:{{.PORT}}/{{.NAME}}
+  Database Driver Class Name: org.postgresql.Driver
+  Database User: {{.USERNAME}}
+  Max Total Connections: '-1'
+  Max Wait Time: 500 millis
+  Password: {{.PASSWORD}}
+  Validation-query:
+  database-driver-locations: ../extensions/postgresql-42.4.0.jar
+  dbcp-max-conn-lifetime: '-1'
+  dbcp-max-idle-conns: '-1'
+  dbcp-min-evictable-idle-time: 30 mins
+  dbcp-min-idle-conns: '0'
+  dbcp-soft-min-evictable-idle-time: '-1'
+  dbcp-time-between-eviction-runs: '-1'
+  kerberos-credentials-service:
+  kerberos-password:
+  kerberos-principal:
+  kerberos-user-service:

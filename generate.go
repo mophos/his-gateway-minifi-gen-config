@@ -51,7 +51,7 @@ func main() {
 	}
 
 	//Template generate
-	templateDir := filepath.Join(dataPath, "template")
+	templateDir := viper.GetString("templatePath")
 	tmpDir := filepath.Join(dataPath, "tmp")
 	//file main.yml
 	mainFlowFile := filepath.Join(templateDir, "main.yml")

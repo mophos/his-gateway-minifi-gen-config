@@ -1,0 +1,1423 @@
+id: 86993e49-3989-36d1-0000-000000000000
+name: {{.CONNECTION_NAME}}
+Processors:
+- id: 9d1e82c5-578c-34ae-0000-000000000000
+  name: '{{.CONNECTION_NAME}} manual-getCount'
+  class: org.apache.nifi.processors.standard.ExecuteSQLRecord
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Database Connection Pooling Service: {{.CONNECTION_UUID}}
+    Max Wait Time: 0 seconds
+    SQL select query: '${query:replace(${query:substringBefore(" from"):substringAfter("select
+      ")},"count(*) as count,0 as offset,convert(varchar, getdate(),112)+''_'' + replace(convert(varchar, getdate(),108),'':'','''') + ''.yml''
+      as datetime"):replaceAll("##START_DATE",${now():toNumber():minus(${literal(86400000):multiply(${literal({{.DAYAGO}}):plus(1)})}):format("yyyy-MM-dd")}):replaceAll("##END_DATE",${now():toNumber():minus(${literal(86400000):multiply({{.DAYAGO}})}):format("yyyy-MM-dd")})} '
+    dbf-default-precision: '10'
+    dbf-default-scale: '0'
+    dbf-user-logical-types: 'false'
+    esql-auto-commit: 'true'
+    esql-fetch-size: '0'
+    esql-max-rows: '0'
+    esql-output-batch-size: '0'
+    esqlrecord-normalize: 'false'
+    esqlrecord-record-writer: 7291f92e-aea3-3dfd-0000-000000000000
+    sql-post-query:
+    sql-pre-query:
+- id: 96846ecf-ed42-3e29-0000-000000000000
+  name: '{{.CONNECTION_NAME}}CronALL'
+  class: org.apache.nifi.processors.standard.GenerateFlowFile
+  max concurrent tasks: 1
+  scheduling strategy: CRON_DRIVEN
+  scheduling period: '{{.CRON_ALL}}'
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Batch Size: '1'
+    Data Format: Text
+    File Size: 0B
+    Unique FlowFiles: 'false'
+    character-set: UTF-8
+    generate-ff-custom-text:
+    mime-type:
+- id: 71ed445a-08c9-3d4c-0000-000000000000
+  name: '{{.CONNECTION_NAME}}CronQuery'
+  class: org.apache.nifi.processors.standard.GenerateFlowFile
+  max concurrent tasks: 1
+  scheduling strategy: CRON_DRIVEN
+  scheduling period: '{{.CRON_QUERY}}'
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Batch Size: '1'
+    Data Format: Text
+    File Size: 0B
+    Unique FlowFiles: 'false'
+    character-set: UTF-8
+    generate-ff-custom-text:
+    mime-type:
+- id: ef0f1861-bf09-3d0a-0000-000000000000
+  name: '{{.CONNECTION_NAME}}GetFile'
+  class: org.apache.nifi.processors.standard.GetFile
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Batch Size: '10'
+    File Filter: '[^\.].*'
+    Ignore Hidden Files: 'true'
+    Input Directory: '{{.MANUAL_PATH}}'
+    Keep Source File: 'false'
+    Maximum File Age:
+    Maximum File Size:
+    Minimum File Age: 0 sec
+    Minimum File Size: 0 B
+    Path Filter:
+    Polling Interval: 0 sec
+    Recurse Subdirectories: 'true'
+- id: f2c3092c-d75d-372b-0000-000000000000
+  name: '{{.CONNECTION_NAME}}PutFile'
+  class: org.apache.nifi.processors.standard.PutFile
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - success
+  Properties:
+    Conflict Resolution Strategy: replace
+    Create Missing Directories: 'true'
+    Directory: '{{.CONNECTION_PATH}}/{{.CONNECTION_UUID}}/tables/${table_name}'
+    Group:
+    Last Modified Time:
+    Maximum File Count:
+    Owner:
+    Permissions:
+- id: bf4b20f1-5164-3340-0000-000000000000
+  name: '{{.CONNECTION_NAME}}ReplaceText'
+  class: org.apache.nifi.processors.standard.ReplaceText
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  Properties:
+    Character Set: UTF-8
+    Evaluation Mode: Line-by-Line
+    Line-by-Line Evaluation Mode: All
+    Maximum Buffer Size: 1 MB
+    Regular Expression: (?s)(^.*$)
+    Replacement Strategy: Always Replace
+    Replacement Value: |-
+      status: 'process'
+      percent: 0
+- id: aed1a34a-b294-35c1-0000-000000000000
+  name: '{{.CONNECTION_NAME}}ReplaceText2'
+  class: org.apache.nifi.processors.standard.ReplaceText
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  Properties:
+    Character Set: UTF-8
+    Evaluation Mode: Line-by-Line
+    Line-by-Line Evaluation Mode: All
+    Maximum Buffer Size: 1 MB
+    Regular Expression: (?s)(^.*$)
+    Replacement Strategy: Always Replace
+    Replacement Value: |-
+      status: 'success'
+      percent: 100
+      send_success: '${now():format("yyyy-MM-dd HH:mm:ss")}'
+- id: 2544bb1c-1867-3db0-0000-000000000000
+  name: '{{.CONNECTION_NAME}}ReplaceText3'
+  class: org.apache.nifi.processors.standard.ReplaceText
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  Properties:
+    Character Set: UTF-8
+    Evaluation Mode: Line-by-Line
+    Line-by-Line Evaluation Mode: All
+    Maximum Buffer Size: 1 MB
+    Regular Expression: (?s)(^.*$)
+    Replacement Strategy: Always Replace
+    Replacement Value: |-
+      status: 'process'
+      percent: ${offset:divide(${record_count}):multiply(100):toNumber()}
+- id: 4be178ed-4ea5-3b7a-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-filterType'
+  class: org.apache.nifi.processors.standard.RouteOnAttribute
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - unmatched
+  Properties:
+    Routing Strategy: Route to Property name
+    all: ${type:equals("ALL")}
+- id: 0664a580-e42d-3535-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-getCount'
+  class: org.apache.nifi.processors.standard.ExecuteSQLRecord
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Database Connection Pooling Service: {{.CONNECTION_UUID}}
+    Max Wait Time: 0 seconds
+    SQL select query: '${query:replace(${query:substringBefore(" from"):substringAfter("select
+      ")},"count(*) as count,0 as offset,convert(varchar, getdate(),112)+''_'' + replace(convert(varchar, getdate(),108),'':'','''') + ''.yml''
+      as datetime"):replaceAll("##START_DATE",${now():toNumber():minus(${literal(86400000):multiply(${literal({{.DAYAGO}}):plus(1)})}):format("yyyy-MM-dd")}):replaceAll("##END_DATE",${now():toNumber():minus(${literal(86400000):multiply({{.DAYAGO}})}):format("yyyy-MM-dd")})} '
+    dbf-default-precision: '10'
+    dbf-default-scale: '0'
+    dbf-user-logical-types: 'false'
+    esql-auto-commit: 'true'
+    esql-fetch-size: '0'
+    esql-max-rows: '0'
+    esql-output-batch-size: '0'
+    esqlrecord-normalize: 'false'
+    esqlrecord-record-writer: 7291f92e-aea3-3dfd-0000-000000000000
+    sql-post-query:
+    sql-pre-query:
+- id: 6201c7d5-7e38-3fa7-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-getDateFromTable'
+  class: org.apache.nifi.processors.standard.ExecuteSQLRecord
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Database Connection Pooling Service: {{.CONNECTION_UUID}}
+    Max Wait Time: 0 seconds
+    SQL select query: '${query:replaceAll("##START_DATE",${now():toNumber():minus(${literal(86400000):multiply(${literal({{.DAYAGO}}):plus(1)})}):format("yyyy-MM-dd")}):replaceAll("##END_DATE",${now():toNumber():minus(${literal(86400000):multiply({{.DAYAGO}})}):format("yyyy-MM-dd")})}
+      limit 5000 offset ${offset} '
+    dbf-default-precision: '10'
+    dbf-default-scale: '0'
+    dbf-user-logical-types: 'false'
+    esql-auto-commit: 'true'
+    esql-fetch-size: '0'
+    esql-max-rows: '0'
+    esql-output-batch-size: '0'
+    esqlrecord-normalize: 'false'
+    esqlrecord-record-writer: 3f4bbd81-34d9-30b3-0000-000000000000
+    sql-post-query:
+    sql-pre-query:
+- id: 59ad588f-a412-352c-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-getSchemaFromUrl'
+  class: org.apache.nifi.processors.standard.InvokeHTTP
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - Original
+  Properties:
+    Add Response Headers to Request: 'false'
+    Always Output Response: 'false'
+    Attributes to Send:
+    Basic Authentication Password:
+    Basic Authentication Username:
+    Connection Timeout: 5 secs
+    Content-Type: ${mime.type}
+    Digest Authentication: 'false'
+    Follow Redirects: 'True'
+    HTTP Method: GET
+    Include Date Header: 'True'
+    Max Length To Put In Attribute: '256'
+    Penalize on "No Retry": 'false'
+    Proxy Host:
+    Proxy Port:
+    Proxy Type: http
+    Put Response Body In Attribute:
+    Read Timeout: 15 secs
+    Remote URL: https://raw.githubusercontent.com/mophos/his-gateway-schema-registry/main/{{.HIS_NAME}}/{{.HIS_NAME}}-latest.json
+    SSL Context Service:
+    Use Chunked Encoding: 'false'
+    Useragent:
+    cookie-strategy: DISABLED
+    disable-http2: 'False'
+    etag-max-cache-size: 10MB
+    flow-file-naming-strategy: RANDOM
+    form-body-form-name:
+    idle-timeout: 5 mins
+    ignore-response-content: 'false'
+    invokehttp-proxy-password:
+    invokehttp-proxy-user:
+    max-idle-connections: '5'
+    oauth2-access-token-provider:
+    proxy-configuration-service:
+    send-message-body: 'true'
+    set-form-filename: 'true'
+    use-etag: 'false'
+- id: 58e7f158-7e80-3238-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-sendToKafka'
+  class: org.apache.nifi.processors.kafka.pubsub.PublishKafka_2_6
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Failure Strategy: Route to Failure
+    ack.wait.time: 5 secs
+    acks: '1'
+    attribute-name-regex:
+    bootstrap.servers: '{{.BOOTSTRAP_SERVER}}'
+    compression.type: none
+    kafka-key: NIFI
+    kerberos-credentials-service:
+    kerberos-user-service:
+    key-attribute-encoding: utf-8
+    max.block.ms: 5 sec
+    max.request.size: 100 MB
+    message-demarcator:
+    message-header-encoding: UTF-8
+    partition:
+    partitioner.class: org.apache.kafka.clients.producer.internals.DefaultPartitioner
+    sasl.kerberos.keytab:
+    sasl.kerberos.principal:
+    sasl.kerberos.service.name:
+    sasl.mechanism: GSSAPI
+    sasl.password:
+    sasl.token.auth: 'false'
+    sasl.username:
+    security.protocol: SSL
+    ssl.context.service: 36a45c79-de82-3b40-0000-000000000000
+    ssl.endpoint.identification.algorithm: ' '
+    topic: '{{.TOPIC}}'
+    transactional-id-prefix:
+    use-transactions: 'false'
+- id: 71787c65-7474-3624-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-setAttributeCount'
+  class: org.apache.nifi.processors.standard.EvaluateJsonPath
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - unmatched
+  Properties:
+    Destination: flowfile-attribute
+    Null Value Representation: empty string
+    Path Not Found Behavior: ignore
+    Return Type: auto-detect
+    datetime: $.datetime
+    filename: $.datetime
+    offset: $.offset
+    record_count: $.count
+- id: e3cc7a9c-5f1b-3bfc-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-setAttributeSchema'
+  class: org.apache.nifi.processors.standard.EvaluateJsonPath
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - unmatched
+  Properties:
+    Destination: flowfile-attribute
+    Null Value Representation: empty string
+    Path Not Found Behavior: ignore
+    Return Type: auto-detect
+    field: $.field
+    query: $.query
+    table_name: $.table_name
+    type: $.type
+- id: e40008b5-8290-3fd0-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-setJsonFormat'
+  class: org.apache.nifi.processors.jolt.record.JoltTransformRecord
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - original
+  Properties:
+    jolt-record-custom-class:
+    jolt-record-custom-modules:
+    jolt-record-record-reader: 426b6384-5949-3fd1-0000-000000000000
+    jolt-record-record-writer: 3f4bbd81-34d9-30b3-0000-000000000000
+    jolt-record-spec: |
+      [
+        {
+          "operation": "shift",
+          "spec": {
+            "@": "data"
+          }
+        },
+        {
+          "operation": "default",
+          "spec": {
+            "hospcode": "{{.HOSPCODE}}",
+            "table_name": "${table_name}",
+            "type": "upsert",
+            "his_type": "{{.HIS_NAME}}"
+          }
+        }
+
+      ]
+    jolt-record-transform: jolt-transform-chain
+    jolt-record-transform-cache-size: '1'
+- id: 0a0c65c5-ec13-3d2f-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-setJsonOffsetLoop'
+  class: org.apache.nifi.processors.standard.JoltTransformJSON
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  Properties:
+    Transform Cache Size: '1'
+    jolt-custom-class:
+    jolt-custom-modules:
+    jolt-spec: |
+      [
+        {
+          "operation": "shift",
+          "spec": {
+            "DELETE": "DELETE"
+          }
+        }
+      ]
+    jolt-transform: jolt-transform-chain
+    pretty_print: 'false'
+- id: d3153a29-d9d2-3378-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-splitSchema'
+  class: org.apache.nifi.processors.standard.SplitJson
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - original
+  Properties:
+    JsonPath Expression: tables.*
+    Null Value Representation: empty string
+- id: 3badd67d-3360-3901-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-startLoopOffset'
+  class: org.apache.nifi.processors.standard.RouteOnAttribute
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Routing Strategy: Route to Property name
+    query: ${offset:lt(${record_count})}
+    success: ${offset:ge(${record_count})}
+- id: a2caa903-814b-3a18-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-updateOffset'
+  class: org.apache.nifi.processors.attributes.UpdateAttribute
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Delete Attributes Expression:
+    Stateful Variables Initial Value:
+    Store State: Do not store state
+    canonical-value-lookup-cache-size: '100'
+    offset: ${offset:plus(${executesql.row.count})}
+- id: ba10a5bf-2366-338e-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-PutFile'
+  class: org.apache.nifi.processors.standard.PutFile
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - success
+  Properties:
+    Conflict Resolution Strategy: replace
+    Create Missing Directories: 'true'
+    Directory: ./data/connections/{{.CONNECTION_NAME}}/tables/${table_name}
+    Group:
+    Last Modified Time:
+    Maximum File Count:
+    Owner:
+    Permissions:
+- id: 4c51eb4a-d2f8-33d2-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-ReplaceText'
+  class: org.apache.nifi.processors.standard.ReplaceText
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  Properties:
+    Character Set: UTF-8
+    Evaluation Mode: Line-by-Line
+    Line-by-Line Evaluation Mode: All
+    Maximum Buffer Size: 1 MB
+    Regular Expression: (?s)(^.*$)
+    Replacement Strategy: Always Replace
+    Replacement Value: |-
+      status: 'process'
+      percent: 0
+- id: 2ebdeed5-6fd8-326d-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-ReplaceText2'
+  class: org.apache.nifi.processors.standard.ReplaceText
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  Properties:
+    Character Set: UTF-8
+    Evaluation Mode: Line-by-Line
+    Line-by-Line Evaluation Mode: All
+    Maximum Buffer Size: 1 MB
+    Regular Expression: (?s)(^.*$)
+    Replacement Strategy: Always Replace
+    Replacement Value: |-
+      status: 'success'
+      percent: 100
+      send_success: '${now():format("yyyy-MM-dd HH:mm:ss")}'
+- id: 06d93433-3899-3b6d-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-ReplaceText3'
+  class: org.apache.nifi.processors.standard.ReplaceText
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  Properties:
+    Character Set: UTF-8
+    Evaluation Mode: Line-by-Line
+    Line-by-Line Evaluation Mode: All
+    Maximum Buffer Size: 1 MB
+    Regular Expression: (?s)(^.*$)
+    Replacement Strategy: Always Replace
+    Replacement Value: |-
+      status: 'process'
+      percent: ${offset:divide(${record_count}):multiply(100):toNumber()}
+- id: aac7832e-9b17-3c2b-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-getDateFromTable'
+  class: org.apache.nifi.processors.standard.ExecuteSQLRecord
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Database Connection Pooling Service: {{.CONNECTION_UUID}}
+    Max Wait Time: 0 seconds
+    SQL select query: ${query} limit 5000 offset ${offset}
+    dbf-default-precision: '10'
+    dbf-default-scale: '0'
+    dbf-user-logical-types: 'false'
+    esql-auto-commit: 'true'
+    esql-fetch-size: '0'
+    esql-max-rows: '0'
+    esql-output-batch-size: '0'
+    esqlrecord-normalize: 'false'
+    esqlrecord-record-writer: 3f4bbd81-34d9-30b3-0000-000000000000
+    sql-post-query:
+    sql-pre-query:
+- id: c34b38c9-b147-3fea-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-sendToKafka'
+  class: org.apache.nifi.processors.kafka.pubsub.PublishKafka_2_6
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Failure Strategy: Route to Failure
+    ack.wait.time: 5 secs
+    acks: '1'
+    attribute-name-regex:
+    bootstrap.servers: '{{.BOOTSTRAP_SERVER}}'
+    compression.type: none
+    kafka-key: NIFI
+    kerberos-credentials-service:
+    kerberos-user-service:
+    key-attribute-encoding: utf-8
+    max.block.ms: 5 sec
+    max.request.size: 100 MB
+    message-demarcator:
+    message-header-encoding: UTF-8
+    partition:
+    partitioner.class: org.apache.kafka.clients.producer.internals.DefaultPartitioner
+    sasl.kerberos.keytab:
+    sasl.kerberos.principal:
+    sasl.kerberos.service.name:
+    sasl.mechanism: GSSAPI
+    sasl.password:
+    sasl.token.auth: 'false'
+    sasl.username:
+    security.protocol: SSL
+    ssl.context.service: 36a45c79-de82-3b40-0000-000000000000
+    ssl.endpoint.identification.algorithm: ' '
+    topic: '{{.TOPIC}}'
+    transactional-id-prefix:
+    use-transactions: 'false'
+- id: 2ecf0557-f409-32d2-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-setAttributeCount'
+  class: org.apache.nifi.processors.standard.EvaluateJsonPath
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - unmatched
+  Properties:
+    Destination: flowfile-attribute
+    Null Value Representation: empty string
+    Path Not Found Behavior: ignore
+    Return Type: auto-detect
+    datetime: $.datetime
+    filename: $.datetime
+    offset: $.offset
+    record_count: $.count
+- id: 53934893-11e6-35eb-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-setJsonFormat'
+  class: org.apache.nifi.processors.jolt.record.JoltTransformRecord
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - original
+  Properties:
+    jolt-record-custom-class:
+    jolt-record-custom-modules:
+    jolt-record-record-reader: 426b6384-5949-3fd1-0000-000000000000
+    jolt-record-record-writer: 3f4bbd81-34d9-30b3-0000-000000000000
+    jolt-record-spec: |
+      [
+        {
+          "operation": "shift",
+          "spec": {
+            "@": "data"
+          }
+        },
+        {
+          "operation": "default",
+          "spec": {
+            "hospcode": "{{.HOSPCODE}}",
+            "table_name": "${table_name}",
+            "type": "upsert",
+            "his_type": "{{.HIS_NAME}}"
+          }
+        }
+
+      ]
+    jolt-record-transform: jolt-transform-chain
+    jolt-record-transform-cache-size: '1'
+- id: cd801fe8-3af9-3a0f-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-setJsonOffsetLoop'
+  class: org.apache.nifi.processors.standard.JoltTransformJSON
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  Properties:
+    Transform Cache Size: '1'
+    jolt-custom-class:
+    jolt-custom-modules:
+    jolt-spec: |
+      [
+        {
+          "operation": "shift",
+          "spec": {
+            "DELETE": "DELETE"
+          }
+        }
+      ]
+    jolt-transform: jolt-transform-chain
+    pretty_print: 'false'
+- id: 337b75a8-14b7-35d4-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-startLoopOffset'
+  class: org.apache.nifi.processors.standard.RouteOnAttribute
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Routing Strategy: Route to Property name
+    query: ${offset:lt(${record_count})}
+    success: ${offset:ge(${record_count})}
+- id: 4fdb05e8-5421-337c-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-updateOffset'
+  class: org.apache.nifi.processors.attributes.UpdateAttribute
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list: []
+  Properties:
+    Delete Attributes Expression:
+    Stateful Variables Initial Value:
+    Store State: Do not store state
+    canonical-value-lookup-cache-size: '100'
+    offset: ${offset:plus(${executesql.row.count})}
+- id: 00015469-996b-3d57-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-filterType'
+  class: org.apache.nifi.processors.standard.RouteOnAttribute
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - unmatched
+  Properties:
+    Routing Strategy: Route to Property name
+    query: ${type:equals("QUERY")}
+- id: adab947c-fa37-3a91-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-getSchemaFromUrl'
+  class: org.apache.nifi.processors.standard.InvokeHTTP
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - Original
+  Properties:
+    Add Response Headers to Request: 'false'
+    Always Output Response: 'false'
+    Attributes to Send:
+    Basic Authentication Password:
+    Basic Authentication Username:
+    Connection Timeout: 5 secs
+    Content-Type: ${mime.type}
+    Digest Authentication: 'false'
+    Follow Redirects: 'True'
+    HTTP Method: GET
+    Include Date Header: 'True'
+    Max Length To Put In Attribute: '256'
+    Penalize on "No Retry": 'false'
+    Proxy Host:
+    Proxy Port:
+    Proxy Type: http
+    Put Response Body In Attribute:
+    Read Timeout: 15 secs
+    Remote URL: https://raw.githubusercontent.com/mophos/his-gateway-schema-registry/main/{{.HIS_NAME}}/{{.HIS_NAME}}-latest.json
+    SSL Context Service:
+    Use Chunked Encoding: 'false'
+    Useragent:
+    cookie-strategy: DISABLED
+    disable-http2: 'False'
+    etag-max-cache-size: 10MB
+    flow-file-naming-strategy: RANDOM
+    form-body-form-name:
+    idle-timeout: 5 mins
+    ignore-response-content: 'false'
+    invokehttp-proxy-password:
+    invokehttp-proxy-user:
+    max-idle-connections: '5'
+    oauth2-access-token-provider:
+    proxy-configuration-service:
+    send-message-body: 'true'
+    set-form-filename: 'true'
+    use-etag: 'false'
+- id: 931bda8b-7e6b-37e6-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-setAttributeSchema'
+  class: org.apache.nifi.processors.standard.EvaluateJsonPath
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - unmatched
+  Properties:
+    Destination: flowfile-attribute
+    Null Value Representation: empty string
+    Path Not Found Behavior: ignore
+    Return Type: auto-detect
+    query: $.query
+    table_name: $.table_name
+    type: $.type
+- id: d0d4c4ca-5d6a-3c13-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-setAttributeSchema'
+  class: org.apache.nifi.processors.standard.EvaluateJsonPath
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - unmatched
+  Properties:
+    Destination: flowfile-attribute
+    Null Value Representation: empty string
+    Path Not Found Behavior: ignore
+    Return Type: auto-detect
+    query: $.query
+    table_name: $.table_name
+    type: $.type
+- id: 6c7c6f47-5af5-3fa1-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-splitSchema'
+  class: org.apache.nifi.processors.standard.SplitJson
+  max concurrent tasks: 1
+  scheduling strategy: TIMER_DRIVEN
+  scheduling period: 0 sec
+  penalization period: 30 sec
+  yield period: 1 sec
+  run duration nanos: 0
+  auto-terminated relationships list:
+  - failure
+  - original
+  Properties:
+    JsonPath Expression: tables.*
+    Null Value Representation: empty string
+Controller Services: []
+Process Groups: []
+Input Ports: []
+Output Ports: []
+Funnels:
+- id: 40af035a-4290-384e-0000-000000000000
+- id: 571d86db-ad50-30f9-0000-000000000000
+- id: 6893d678-e0f2-3bd2-0000-000000000000
+- id: 6e6546c9-655a-3957-0000-000000000000
+- id: 73400f13-467d-3f89-0000-000000000000
+- id: 76d0c9d5-57f1-3416-0000-000000000000
+- id: 7dc8c842-65f0-3b06-0000-000000000000
+- id: 97012e26-315f-3193-0000-000000000000
+- id: ad52edf5-ca9e-3ffe-0000-000000000000
+- id: cac52c59-a804-3e3d-0000-000000000000
+- id: e121a3d2-d1a2-3958-0000-000000000000
+- id: e38e3066-f0e6-3f9a-0000-000000000000
+Connections:
+- id: 181e9fbf-8a60-3ce8-0000-000000000000
+  name: '{{.CONNECTION_NAME}}-query-success'
+  source id: 71ed445a-08c9-3d4c-0000-000000000000
+  source relationship names:
+  - success
+  destination id: adab947c-fa37-3a91-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: bbbf5b64-d387-3262-0000-000000000000
+  name: '{{.CONNECTION_NAME}}ReplaceText3/success/{{.CONNECTION_NAME}}PutFile'
+  source id: 2544bb1c-1867-3db0-0000-000000000000
+  source relationship names:
+  - success
+  destination id: f2c3092c-d75d-372b-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: f2dd99f5-6bdd-31ed-0000-000000000000
+  name: '{{.CONNECTION_NAME}}SendSuccess'
+  source id: 3badd67d-3360-3901-0000-000000000000
+  source relationship names:
+  - success
+  destination id: aed1a34a-b294-35c1-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 067c46df-6d74-3741-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all'
+  source id: 4be178ed-4ea5-3b7a-0000-000000000000
+  source relationship names:
+  - all
+  destination id: 0664a580-e42d-3535-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: fc3725c7-ef04-370f-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-JoltToRoute'
+  source id: 0a0c65c5-ec13-3d2f-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 3badd67d-3360-3901-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: e3a3c861-458a-3db7-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-getCountFailed'
+  source id: 0664a580-e42d-3535-0000-000000000000
+  source relationship names:
+  - failure
+  destination id: 76d0c9d5-57f1-3416-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: d6c83ad6-c862-3d34-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-getDateFromTable/success/{{.CONNECTION_NAME}}all-setJsonFormat'
+  source id: 6201c7d5-7e38-3fa7-0000-000000000000
+  source relationship names:
+  - success
+  destination id: e40008b5-8290-3fd0-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: e93715ac-4731-378d-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-getSchema-noRetry'
+  source id: 59ad588f-a412-352c-0000-000000000000
+  source relationship names:
+  - No Retry
+  destination id: 7dc8c842-65f0-3b06-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 5d0db66b-31a5-32d9-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-getSchema-retry'
+  source id: 59ad588f-a412-352c-0000-000000000000
+  source relationship names:
+  - Failure
+  - Retry
+  destination id: 59ad588f-a412-352c-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 762331b8-cbfc-3c56-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-match'
+  source id: e3cc7a9c-5f1b-3bfc-0000-000000000000
+  source relationship names:
+  - matched
+  destination id: 4be178ed-4ea5-3b7a-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: d583dade-49d8-376e-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-notMatch'
+  source id: 337b75a8-14b7-35d4-0000-000000000000
+  source relationship names:
+  - unmatched
+  destination id: 97012e26-315f-3193-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: f6c9ad20-dd30-330f-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-notMatch'
+  source id: 3badd67d-3360-3901-0000-000000000000
+  source relationship names:
+  - unmatched
+  destination id: e38e3066-f0e6-3f9a-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: ab88597d-7b6b-3ba8-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-response'
+  source id: 59ad588f-a412-352c-0000-000000000000
+  source relationship names:
+  - Response
+  destination id: d3153a29-d9d2-3378-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 126f2559-2103-394d-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-sendKafkaFailed'
+  source id: 58e7f158-7e80-3238-0000-000000000000
+  source relationship names:
+  - failure
+  destination id: 40af035a-4290-384e-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 824cb39e-ac6e-3fb4-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-split'
+  source id: d3153a29-d9d2-3378-0000-000000000000
+  source relationship names:
+  - split
+  destination id: e3cc7a9c-5f1b-3bfc-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: cf258157-d0df-3a23-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-startLoopOffset/query/{{.CONNECTION_NAME}}ReplaceText3'
+  source id: 3badd67d-3360-3901-0000-000000000000
+  source relationship names:
+  - query
+  destination id: 2544bb1c-1867-3db0-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 80feebbb-0439-3b3b-0000-000000000000
+  name: '{{.CONNECTION_NAME}}all-success'
+  source id: 96846ecf-ed42-3e29-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 59ad588f-a412-352c-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 3f52de18-502b-36ab-0000-000000000000
+  name: '{{.CONNECTION_NAME}}failed'
+  source id: 6201c7d5-7e38-3fa7-0000-000000000000
+  source relationship names:
+  - failure
+  destination id: 73400f13-467d-3f89-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 49932f85-e11c-3a41-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-failed'
+  source id: f2c3092c-d75d-372b-0000-000000000000
+  source relationship names:
+  - failure
+  destination id: cac52c59-a804-3e3d-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 13f87a58-8a5a-38c8-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-match'
+  source id: 71787c65-7474-3624-0000-000000000000
+  source relationship names:
+  - matched
+  destination id: bf4b20f1-5164-3340-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 491044ec-6ebd-3b67-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-match'
+  source id: 71787c65-7474-3624-0000-000000000000
+  source relationship names:
+  - matched
+  destination id: 3badd67d-3360-3901-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: c7aa89ee-2bd6-3c65-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-match'
+  source id: 2ecf0557-f409-32d2-0000-000000000000
+  source relationship names:
+  - matched
+  destination id: 337b75a8-14b7-35d4-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 1b801821-ceb2-34b0-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-query'
+  source id: 3badd67d-3360-3901-0000-000000000000
+  source relationship names:
+  - query
+  destination id: 6201c7d5-7e38-3fa7-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 6af81592-2fec-3cae-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-success3'
+  source id: e40008b5-8290-3fd0-0000-000000000000
+  source relationship names:
+  - success
+  destination id: a2caa903-814b-3a18-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 4878b98f-44bd-3878-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-success4'
+  source id: a2caa903-814b-3a18-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 58e7f158-7e80-3238-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 4550f036-1483-31ae-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-success5'
+  source id: 58e7f158-7e80-3238-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 0a0c65c5-ec13-3d2f-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 57141576-5832-37ea-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-success6'
+  source id: bf4b20f1-5164-3340-0000-000000000000
+  source relationship names:
+  - success
+  destination id: f2c3092c-d75d-372b-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: b4b14beb-6534-35a2-0000-000000000000
+  name: '{{.CONNECTION_NAME}}flow-success7'
+  source id: aed1a34a-b294-35c1-0000-000000000000
+  source relationship names:
+  - success
+  destination id: f2c3092c-d75d-372b-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 0e266ed6-5c8c-38a5-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-JoltToRoute'
+  source id: cd801fe8-3af9-3a0f-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 337b75a8-14b7-35d4-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 8f2abef4-0080-3a8d-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-SendSuccess'
+  source id: 337b75a8-14b7-35d4-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 2ebdeed5-6fd8-326d-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: e1afd9a0-c260-38be-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-failed'
+  source id: aac7832e-9b17-3c2b-0000-000000000000
+  source relationship names:
+  - failure
+  destination id: e121a3d2-d1a2-3958-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: f6d6f6fb-1ad4-3fcd-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-failed'
+  source id: ba10a5bf-2366-338e-0000-000000000000
+  source relationship names:
+  - failure
+  destination id: 571d86db-ad50-30f9-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: b67dd623-cadd-3e6b-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-getCountFailed'
+  source id: 9d1e82c5-578c-34ae-0000-000000000000
+  source relationship names:
+  - failure
+  destination id: 6e6546c9-655a-3957-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 9606fbb2-4dbc-33b4-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-getDateFromTable/success/{{.CONNECTION_NAME}}manual-setJsonFormat'
+  source id: aac7832e-9b17-3c2b-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 53934893-11e6-35eb-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 91588142-a773-36f4-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-match'
+  source id: 2ecf0557-f409-32d2-0000-000000000000
+  source relationship names:
+  - matched
+  destination id: 4c51eb4a-d2f8-33d2-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 6ebca70d-1295-3805-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-query'
+  source id: 337b75a8-14b7-35d4-0000-000000000000
+  source relationship names:
+  - query
+  destination id: aac7832e-9b17-3c2b-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: a5124e72-b35d-3009-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-sendKafkaFailed'
+  source id: c34b38c9-b147-3fea-0000-000000000000
+  source relationship names:
+  - failure
+  destination id: 6893d678-e0f2-3bd2-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 044ddbe1-334a-399f-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success'
+  source id: 9d1e82c5-578c-34ae-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 2ecf0557-f409-32d2-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: c698bba0-1432-3c59-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success'
+  source id: ef0f1861-bf09-3d0a-0000-000000000000
+  source relationship names:
+  - success
+  destination id: d0d4c4ca-5d6a-3c13-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 6669f265-75f6-3290-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success10'
+  source id: 06d93433-3899-3b6d-0000-000000000000
+  source relationship names:
+  - success
+  destination id: ba10a5bf-2366-338e-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 18da8c63-4013-3859-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success3'
+  source id: 53934893-11e6-35eb-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 4fdb05e8-5421-337c-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 70e5b796-9c1f-3d29-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success4'
+  source id: 4fdb05e8-5421-337c-0000-000000000000
+  source relationship names:
+  - success
+  destination id: c34b38c9-b147-3fea-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 9cf5edeb-d003-37fc-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success5'
+  source id: c34b38c9-b147-3fea-0000-000000000000
+  source relationship names:
+  - success
+  destination id: cd801fe8-3af9-3a0f-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 8ce22163-38d8-377b-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success6'
+  source id: 4c51eb4a-d2f8-33d2-0000-000000000000
+  source relationship names:
+  - success
+  destination id: ba10a5bf-2366-338e-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: aea6876d-03b3-3915-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success7'
+  source id: 2ebdeed5-6fd8-326d-0000-000000000000
+  source relationship names:
+  - success
+  destination id: ba10a5bf-2366-338e-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 7689468a-fb61-304c-0000-000000000000
+  name: '{{.CONNECTION_NAME}}manual-success9'
+  source id: 337b75a8-14b7-35d4-0000-000000000000
+  source relationship names:
+  - query
+  destination id: 06d93433-3899-3b6d-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 5a15f7fd-e807-368b-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-getSchema-noRetry'
+  source id: adab947c-fa37-3a91-0000-000000000000
+  source relationship names:
+  - No Retry
+  destination id: ad52edf5-ca9e-3ffe-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 6a82071a-f0d5-3158-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-getSchema-retry'
+  source id: adab947c-fa37-3a91-0000-000000000000
+  source relationship names:
+  - Failure
+  - Retry
+  destination id: adab947c-fa37-3a91-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 03bb7235-f3a8-317f-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-match'
+  source id: 931bda8b-7e6b-37e6-0000-000000000000
+  source relationship names:
+  - matched
+  destination id: 00015469-996b-3d57-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: b364ac64-87bd-316f-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-query'
+  source id: 00015469-996b-3d57-0000-000000000000
+  source relationship names:
+  - query
+  destination id: 0664a580-e42d-3535-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 366ed373-fc44-39ae-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-response'
+  source id: adab947c-fa37-3a91-0000-000000000000
+  source relationship names:
+  - Response
+  destination id: 6c7c6f47-5af5-3fa1-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: 88ffb8e7-0e50-36a2-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-setAttributeSchema/matched/{{.CONNECTION_NAME}} manual-getCount'
+  source id: d0d4c4ca-5d6a-3c13-0000-000000000000
+  source relationship names:
+  - matched
+  destination id: 9d1e82c5-578c-34ae-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: f26bc1c3-9df9-31da-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-split'
+  source id: 6c7c6f47-5af5-3fa1-0000-000000000000
+  source relationship names:
+  - split
+  destination id: 931bda8b-7e6b-37e6-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+- id: be98b714-4f7b-3e17-0000-000000000000
+  name: '{{.CONNECTION_NAME}}query-success'
+  source id: 0664a580-e42d-3535-0000-000000000000
+  source relationship names:
+  - success
+  destination id: 71787c65-7474-3624-0000-000000000000
+  max work queue size: 10000
+  max work queue data size: 1 GB
+  flowfile expiration: 0 sec
+  queue prioritizer class: ''
+Remote Process Groups: []

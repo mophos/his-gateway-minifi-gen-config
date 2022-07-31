@@ -1,0 +1,28 @@
+server:
+    max_concurrent_threads: 5
+    keystore_path: /opt/data/ssl/key.jks
+    keystore_password: "123456"
+    truststore_path: /opt/data/ssl/trust.jks
+    truststore_password: "123456"
+connections:
+    - id: 85cdd3e0-26f7-43d6-8664-b140e4c10133
+      name: moph-connection-33
+      hospcode: "33333"
+      type: mysql
+      his_name: hosxpv3
+      host: localhost
+      port: 3306
+      database: hos
+      schema: ""
+      username: sa
+      password: "1234"
+      cronjob:
+        cronjob_query:
+            dayago: 3
+            run_time: "12:00"
+        cronjob_all:
+            run_every: 3
+            run_time: "12:00"
+      broker:
+        bootstrap_server: localhost:19903
+        topic: R07-00002

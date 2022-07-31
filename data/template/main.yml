@@ -1,0 +1,131 @@
+MiNiFi Config Version: 3
+Flow Controller:
+  name: Main
+  comment: ''
+Core Properties:
+  flow controller graceful shutdown period: 10 sec
+  flow service write delay interval: 500 ms
+  administrative yield duration: 30 sec
+  bored yield duration: 10 millis
+  max concurrent threads: '{{.MAXCONCURRENTTHREADS}}'
+  variable registry properties: ''
+FlowFile Repository:
+  implementation: org.apache.nifi.controller.repository.WriteAheadFlowFileRepository
+  partitions: 256
+  checkpoint interval: 2 mins
+  always sync: false
+  Swap:
+    threshold: 20000
+    in period: 5 sec
+    in threads: 1
+    out period: 5 sec
+    out threads: 4
+Content Repository:
+  implementation: org.apache.nifi.controller.repository.FileSystemRepository
+  content claim max appendable size: 10 MB
+  content claim max flow files: 100
+  content repository archive enabled: false
+  content repository archive max retention period: 6 hours
+  content repository archive max usage percentage: 80%
+  always sync: false
+Provenance Repository:
+  provenance rollover time: 1 min
+  implementation: org.apache.nifi.provenance.WriteAheadProvenanceRepository
+  provenance index shard size: 500 MB
+  provenance max storage size: 1 GB
+  provenance max storage time: 24 hours
+  provenance buffer size: 10000
+Component Status Repository:
+  buffer size: 1440
+  snapshot frequency: 1 min
+Security Properties:
+  keystore: ''
+  keystore type: ''
+  keystore password: ''
+  key password: ''
+  truststore: ''
+  truststore type: ''
+  truststore password: ''
+  ssl protocol: ''
+  Sensitive Props:
+    key:
+    algorithm: NIFI_PBKDF2_AES_GCM_256
+Processors: []
+Controller Services:
+- id: 3f4bbd81-34d9-30b3-0000-000000000000
+  name: JsonRecordSetWriter
+  type: org.apache.nifi.json.JsonRecordSetWriter
+  Properties:
+    Date Format:
+    Pretty Print JSON: 'false'
+    Schema Write Strategy: no-schema
+    Time Format:
+    Timestamp Format:
+    compression-format: none
+    compression-level: '1'
+    output-grouping: output-array
+    schema-access-strategy: inherit-record-schema
+    schema-branch:
+    schema-cache:
+    schema-name: ${schema.name}
+    schema-protocol-version: '1'
+    schema-registry:
+    schema-text: ${avro.schema}
+    schema-version:
+    suppress-nulls: never-suppress
+- id: 7291f92e-aea3-3dfd-0000-000000000000
+  name: JsonRecordSetWriterObject
+  type: org.apache.nifi.json.JsonRecordSetWriter
+  Properties:
+    Date Format:
+    Pretty Print JSON: 'false'
+    Schema Write Strategy: no-schema
+    Time Format:
+    Timestamp Format:
+    compression-format: none
+    compression-level: '1'
+    output-grouping: output-oneline
+    schema-access-strategy: inherit-record-schema
+    schema-branch:
+    schema-cache:
+    schema-name: ${schema.name}
+    schema-protocol-version: '1'
+    schema-registry:
+    schema-text: ${avro.schema}
+    schema-version:
+    suppress-nulls: never-suppress
+- id: 426b6384-5949-3fd1-0000-000000000000
+  name: JsonTreeReader
+  type: org.apache.nifi.json.JsonTreeReader
+  Properties:
+    Date Format:
+    Time Format:
+    Timestamp Format:
+    schema-access-strategy: infer-schema
+    schema-branch:
+    schema-inference-cache:
+    schema-name: ${schema.name}
+    schema-registry:
+    schema-text: ${avro.schema}
+    schema-version:
+    starting-field-name:
+    starting-field-strategy: ROOT_NODE
+- id: 36a45c79-de82-3b40-0000-000000000000
+  name: StandardSSLContextService
+  type: org.apache.nifi.ssl.StandardSSLContextService
+  Properties:
+    Keystore Filename: '{{.KEYSTORE_PATH}}'
+    Keystore Password: '{{.KEYSTORE_PASSWORD}}'
+    Keystore Type: JKS
+    SSL Protocol: SSL
+    Truststore Filename: '{{.TRUSTSTORE_PATH}}'
+    Truststore Password: '{{.TRUSTSTORE_PASSWORD}}'
+    Truststore Type: JKS
+    key-password: '{{.KEYSTORE_PASSWORD}}'
+Process Groups: []
+Input Ports: []
+Output Ports: []
+Funnels: []
+Connections: []
+Remote Process Groups: []
+NiFi Properties Overrides: {}

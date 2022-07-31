@@ -27,6 +27,13 @@ func main() {
 
 	var dataPath = viper.GetString("data.path")
 	var connectionsPath = viper.GetString("data.connections")
+	var outPath = viper.GetString("data.outPath")
+
+	// Create tmp directory
+	errCreateOutput := os.MkdirAll(outPath, os.ModePerm)
+	if errCreateOutput != nil {
+		log.Println("Create output directory: ", errCreateOutput.Error())
+	}
 
 	var settingFilePath = filepath.Join(dataPath, "data/config", "setting.yml")
 
@@ -239,7 +246,7 @@ func main() {
 		log.Fatal(errMarshal.Error())
 	}
 
-	configPath := filepath.Join(dataPath, "data/config", "config.yml")
+	configPath := filepath.Join(outPath, "config.yml")
 	errWriteFile := ioutil.WriteFile(configPath, yamlData, os.ModePerm)
 	if errWriteFile != nil {
 		log.Fatal(errWriteFile.Error())

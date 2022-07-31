@@ -1,3 +1,4 @@
 data:
   path: /data
+  outPath: /opt/minifi/config
   connections: /data/connections

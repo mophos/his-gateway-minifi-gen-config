@@ -6,7 +6,7 @@ server:
     truststore_password: "123456"
 connections:
     - id: 85cdd3e0-26f7-43d6-8664-b140e4c10133
-      name: moph-connection-33
+      name: moph-connection-demo
       hospcode: "33333"
       type: mysql
       his_name: hosxpv3

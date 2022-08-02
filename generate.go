@@ -9,6 +9,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/google/uuid"
 	"github.com/mophos/minifi-gen-config/models"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -163,14 +164,16 @@ func main() {
 		}
 
 		cronQuery := strings.Split(conn.Cronjob.CronjobQuery.RunTime, ":")
-		queryCronTab := fmt.Sprintf("%s %s * * *", cronQuery[1], cronQuery[0])
+		queryCronTab := fmt.Sprintf("%s %s * * * ?", cronQuery[1], cronQuery[0])
 
 		cronAll := strings.Split(conn.Cronjob.CronjobAll.RunTime, ":")
-		allCronTab := fmt.Sprintf("%s %s * * *", cronAll[1], cronAll[0])
+		allCronTab := fmt.Sprintf("%s %s * * * ?", cronAll[1], cronAll[0])
 
 		manualPath := filepath.Join(dataPath, connectionsPath, connectionId, "table_manual")
 
+		flowID := uuid.NewString()
 		flowData := models.FlowTemplateStruct{
+			FLOW_UUID:        flowID,
 			CONNECTION_UUID:  connectionId,
 			CONNECTION_NAME:  connectionName,
 			MANUAL_PATH:      manualPath,
@@ -238,6 +241,8 @@ func main() {
 		if errFlowsYaml != nil {
 			log.Fatal(errFlowsYaml)
 		}
+
+		// log.Println(_flowData.Funnels)
 
 		mainFlowData.ControllerServices = append(mainFlowData.ControllerServices, _connData)
 		mainFlowData.ProcessGroups = append(mainFlowData.ProcessGroups, _flowData)

@@ -28,6 +28,7 @@ require (
 
 require (
 	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/google/uuid v1.3.0
 	github.com/spf13/viper v1.12.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

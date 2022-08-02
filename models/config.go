@@ -45,6 +45,7 @@ type ConnectoionTemplateStruct struct {
 }
 
 type FlowTemplateStruct struct {
+	FLOW_UUID        string
 	CONNECTION_UUID  string
 	CONNECTION_NAME  string
 	CRON_ALL         string
@@ -159,9 +160,9 @@ type FlowStruct struct {
 	ProcessGroups      []struct{} `yaml:"Process Groups"`
 	InputPorts         []struct{} `yaml:"Input Ports"`
 	OutputPorts        []struct{} `yaml:"Output Ports"`
-	// Funnels            []struct {
-	// 	ID string `yaml:"id"`
-	// } `yaml:"Funnels"`
+	Funnels            []struct {
+		ID string `yaml:"id"`
+	} `yaml:"Funnels"`
 	Connections []struct {
 		ID                      string   `yaml:"id"`
 		Name                    string   `yaml:"name"`

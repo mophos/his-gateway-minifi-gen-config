@@ -167,7 +167,7 @@ Controller Services:
         kerberos-principal: null
         kerberos-user-service: null
 Process Groups:
-    - id: 86993e49-3989-36d1-0000-000000000000
+    - id: f1965907-65ae-47d5-a2fc-07a97ca1d620
       name: moph-connection-33
       Processors:
         - id: 9d1e82c5-578c-34ae-0000-000000000000
@@ -566,6 +566,19 @@ Process Groups:
       Process Groups: []
       Input Ports: []
       Output Ports: []
+      Funnels:
+        - id: 40af035a-4290-384e-0000-000000000000
+        - id: 571d86db-ad50-30f9-0000-000000000000
+        - id: 6893d678-e0f2-3bd2-0000-000000000000
+        - id: 6e6546c9-655a-3957-0000-000000000000
+        - id: 73400f13-467d-3f89-0000-000000000000
+        - id: 76d0c9d5-57f1-3416-0000-000000000000
+        - id: 7dc8c842-65f0-3b06-0000-000000000000
+        - id: 97012e26-315f-3193-0000-000000000000
+        - id: ad52edf5-ca9e-3ffe-0000-000000000000
+        - id: cac52c59-a804-3e3d-0000-000000000000
+        - id: e121a3d2-d1a2-3958-0000-000000000000
+        - id: e38e3066-f0e6-3f9a-0000-000000000000
       Connections:
         - id: 181e9fbf-8a60-3ce8-0000-000000000000
           name: moph-connection-33-query-success
@@ -1109,7 +1122,7 @@ Process Groups:
           max work queue data size: 1 GB
           flowfile expiration: 0 sec
           queue prioritizer class: ""
-    - id: 86993e49-3989-36d1-0000-000000000000
+    - id: 2865c729-d0c4-46af-87b0-e2fe3072fc4c
       name: moph-connection-2
       Processors:
         - id: 9d1e82c5-578c-34ae-0000-000000000000
@@ -1508,6 +1521,19 @@ Process Groups:
       Process Groups: []
       Input Ports: []
       Output Ports: []
+      Funnels:
+        - id: 40af035a-4290-384e-0000-000000000000
+        - id: 571d86db-ad50-30f9-0000-000000000000
+        - id: 6893d678-e0f2-3bd2-0000-000000000000
+        - id: 6e6546c9-655a-3957-0000-000000000000
+        - id: 73400f13-467d-3f89-0000-000000000000
+        - id: 76d0c9d5-57f1-3416-0000-000000000000
+        - id: 7dc8c842-65f0-3b06-0000-000000000000
+        - id: 97012e26-315f-3193-0000-000000000000
+        - id: ad52edf5-ca9e-3ffe-0000-000000000000
+        - id: cac52c59-a804-3e3d-0000-000000000000
+        - id: e121a3d2-d1a2-3958-0000-000000000000
+        - id: e38e3066-f0e6-3f9a-0000-000000000000
       Connections:
         - id: 181e9fbf-8a60-3ce8-0000-000000000000
           name: moph-connection-2-query-success
